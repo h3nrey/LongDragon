@@ -55,6 +55,8 @@ public class PlayerBodyController : MonoBehaviour
 
             part.GetComponent<PartBehaviour>().rotatePoint = this.transform;
 
+            part.GetComponent<PartBehaviour>().partPosition = bodyParts.Count;
+
             bodyParts.Add(part.transform);
         }
     }

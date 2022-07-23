@@ -4,16 +4,22 @@ using UnityEngine;
 
 public class FlyingBehaviour : MonoBehaviour
 {
-    
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+    private void FixedUpdate() {
+        Flying();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+    private void Flying() {
+        if (PlayerBehaviour.instance.pressingFlybutton) {
+            if(PlayerBehaviour.instance.flySpeed <= PlayerBehaviour.instance.maxFlySpeed) {
+                PlayerBehaviour.instance.rb.gravityScale = 0;
+                PlayerBehaviour.instance.rb.velocity = new Vector2(PlayerBehaviour.instance.velX, PlayerBehaviour.instance.flySpeed * Time.fixedDeltaTime);
+
+                PlayerBehaviour.instance.flySpeed += PlayerBehaviour.instance.flySpeedIncrementer;
+            }
+            
+        } else {
+            PlayerBehaviour.instance.rb.gravityScale = PlayerBehaviour.instance.gravityScale;
+            PlayerBehaviour.instance.flySpeed = PlayerBehaviour.instance.baseFlySpeed;
+        }
     }
 }

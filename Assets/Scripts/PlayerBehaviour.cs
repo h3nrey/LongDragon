@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using NaughtyAttributes;
 
 public class PlayerBehaviour : MonoBehaviour
 {
@@ -10,16 +11,21 @@ public class PlayerBehaviour : MonoBehaviour
     [SerializeField] private float horizontalSpeed;
 
     [Header("Physics")]
-    [SerializeField] private Rigidbody2D rb;
-    [SerializeField] public static float velX, velY; // shorthands to rb.velocity in X and Y axis
+    [SerializeField] public Rigidbody2D rb;
+    [ReadOnly] public float velX, velY; // shorthands to rb.velocity in X and Y axis
+    [SerializeField] public float maxVelocityY = 14;
+    [SerializeField] public float gravityScale;
 
     [Header("Jump")]
     [SerializeField] float jumpForce = 300f;
-    [SerializeField] float flySpeed = 10f;
+    public float flySpeed;
+    public float baseFlySpeed = 10f;
+    public float maxFlySpeed = 20f;
+    public float flySpeedIncrementer = 0.5f;
 
     [Header("Checks")]
     public bool facingRight = true;
-    [SerializeField] private bool pressingFlybutton = false;
+    [ReadOnly] public bool pressingFlybutton = false;
 
     private void Awake() {
         if(!instance) instance = this;
@@ -31,7 +37,15 @@ public class PlayerBehaviour : MonoBehaviour
         velY = rb.velocity.y;
 
         rb.velocity = new Vector2(input.x * horizontalSpeed * Time.fixedDeltaTime, velY);
-        Flying();
+
+        //if (velY > 0) {
+        //    float angle = Mathf.Lerp(0, 10, (rb.velocity.y / 3f));
+        //    transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, angle);
+        //}
+        //if (velY < 0) {
+        //    float angle = Mathf.Lerp(0, -10, (-rb.velocity.y / 3f));
+        //    transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, angle);
+        //}
     }
 
     private void Update() {
@@ -59,19 +73,13 @@ public class PlayerBehaviour : MonoBehaviour
     }
 
     void Turn() {
-        if (facingRight) transform.rotation = Quaternion.Euler(Vector2.up * 0);
-        else transform.rotation = Quaternion.Euler(Vector2.up * 180);
+        if (facingRight) transform.rotation = Quaternion.Euler(0,0,transform.eulerAngles.z);
+        else transform.rotation = Quaternion.Euler(0, 180, transform.eulerAngles.z);
     }
 
-    private void Jump() {
-        rb.AddForce(Vector2.up * jumpForce);
+    void Lean() {
+        transform.eulerAngles = Vector3.forward * 90f;
+        print("Leaning");
     }
 
-    private void Flying() {
-        if (pressingFlybutton) {
-            rb.gravityScale = 0;
-            rb.velocity = new Vector2(velX, flySpeed * Time.deltaTime);
-            //rb.AddForce(Vector2.up * flySpeed * Time.fixedDeltaTime, ForceMode2D.Impulse);
-        } else rb.gravityScale = 1;
-    }
 }

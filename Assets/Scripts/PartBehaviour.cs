@@ -7,11 +7,14 @@ public class PartBehaviour : MonoBehaviour {
 
     public static PartBehaviour instance;
     [SerializeField] public float partSpeed;
+    [SerializeField] private float positionMultiplier;
     [SerializeField] public Transform target;
 
     [SerializeField] public Transform rotatePointZ;
     [SerializeField] public Transform rotatePoint;
     Rigidbody2D partRb;
+
+    public int partPosition;
     // Start is called before the first frame update
 
     private void OnEnable() {
@@ -24,7 +27,16 @@ public class PartBehaviour : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        partRb.position = Vector2.MoveTowards(transform.position, target.position, partSpeed * Time.deltaTime);
+        partSpeed = Mathf.Min((Mathf.Abs(Mathf.Abs(PlayerBehaviour.instance.rb.velocity.magnitude) - partPosition * positionMultiplier) * Time.deltaTime * 10), PlayerBehaviour.instance.rb.velocity.magnitude);
+
+        partRb.position = Vector2.MoveTowards(transform.position, target.position, partSpeed);
+        print($"menor valor: {partSpeed}, velocity: {PlayerBehaviour.instance.rb.velocity.magnitude}");
+        //partRb.velocity = PlayerBehaviour.instance.rb.velocity;
+
+
+        //transform.rotation = Quaternion.Euler(transform.eulerAngles.x,transform.eulerAngles.y, target.eulerAngles.z - (-partPosition ));
+
+
         Turn();
 
     }

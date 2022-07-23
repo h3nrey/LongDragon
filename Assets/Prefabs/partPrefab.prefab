@@ -116,8 +116,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   partSpeed: 32
+  positionMultiplier: 0.5
   target: {fileID: 0}
+  rotatePointZ: {fileID: 0}
   rotatePoint: {fileID: 0}
+  partPosition: 0
 --- !u!50 &880845865132265555
 Rigidbody2D:
   serializedVersion: 4
