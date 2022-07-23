@@ -7,8 +7,13 @@ using NaughtyAttributes;
 public class PlayerBehaviour : MonoBehaviour
 {
     static public PlayerBehaviour instance;
-    [SerializeField] public Vector2 input { get; set; }
+    [ReadOnly] public Vector2 input;
     [SerializeField] private float horizontalSpeed;
+
+    [Header("Rotate")]
+    [SerializeField] private float rotationSpeed;
+    [ReadOnly] Vector3 inputVector;
+    [ReadOnly] Vector3 currentPosition;
 
     [Header("Physics")]
     [SerializeField] public Rigidbody2D rb;
@@ -27,6 +32,7 @@ public class PlayerBehaviour : MonoBehaviour
     public bool facingRight = true;
     [ReadOnly] public bool pressingFlybutton = false;
 
+
     private void Awake() {
         if(!instance) instance = this;
     }
@@ -36,21 +42,21 @@ public class PlayerBehaviour : MonoBehaviour
         velX = rb.velocity.x;
         velY = rb.velocity.y;
 
-        rb.velocity = new Vector2(input.x * horizontalSpeed * Time.fixedDeltaTime, velY);
+        rb.velocity = input * horizontalSpeed * Time.fixedDeltaTime;
+           
 
-        //if (velY > 0) {
-        //    float angle = Mathf.Lerp(0, 10, (rb.velocity.y / 3f));
-        //    transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, angle);
-        //}
-        //if (velY < 0) {
-        //    float angle = Mathf.Lerp(0, -10, (-rb.velocity.y / 3f));
-        //    transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, angle);
-        //}
     }
 
     private void Update() {
-        Turn();
-        CheckFacing();
+        //Turn();
+        //CheckFacing();
+        Vector2 lookDir = input;
+
+
+        float targetAngle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
+        rb.rotation = targetAngle;
+
+        //print($"targetAngle: {targetAngle}, lookDir: {lookDir}");
     }
 
     #region Inputs
@@ -68,14 +74,14 @@ public class PlayerBehaviour : MonoBehaviour
     }
     #endregion
 
-    void CheckFacing() {
-        if (input.x == 1) facingRight = true; else if(input.x == -1)facingRight = false;
-    }
+    //void CheckFacing() {
+    //    if (input.x == 1) facingRight = true; else if(input.x == -1)facingRight = false;
+    //}
 
-    void Turn() {
-        if (facingRight) transform.rotation = Quaternion.Euler(0,0,transform.eulerAngles.z);
-        else transform.rotation = Quaternion.Euler(0, 180, transform.eulerAngles.z);
-    }
+    //void Turn() {
+    //    if (facingRight) transform.rotation = Quaternion.Euler(0,0,transform.eulerAngles.z);
+    //    else transform.rotation = Quaternion.Euler(0, 180, transform.eulerAngles.z);
+    //}
 
     void Lean() {
         transform.eulerAngles = Vector3.forward * 90f;
