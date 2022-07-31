@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - food
+  - Ground
+  - Damage
+  - projectille
   layers:
   - Default
   - TransparentFX
