@@ -54,6 +54,9 @@ public class PlayerBehaviour : MonoBehaviour
     [ReadOnly] public bool canShoot = true;
     public List<GameObject> projectilles;
 
+    [Header("Graphics")]
+    public SpriteRenderer _graphics;
+
     private void Awake() {
         if(!instance) instance = this;
     }
@@ -63,20 +66,11 @@ public class PlayerBehaviour : MonoBehaviour
         velX = rb.velocity.x;
         velY = rb.velocity.y;
 
-        if (Mathf.Abs(input.magnitude) > 0.01f && Mathf.Abs(velX) < maxSpeed && Mathf.Abs(velY) < maxSpeed)
-            rb.AddForce(input * speed * Time.fixedDeltaTime);
-            
-
-
-        #region using force
-        //Vector2 targetSpeed = input * horizontalSpeed;
-        //Vector2 speedDif = targetSpeed - rb.velocity;
-        //float accelRate = (Mathf.Abs(targetSpeed.sqrMagnitude) > 0.01f) ? acceleration : decceleration;
-        //Vector2 movement = new Vector2(Mathf.Pow(Mathf.Abs(speedDif.x) * accelRate, velPower) * Mathf.Sign(speedDif.x), Mathf.Pow(Mathf.Abs(speedDif.y) * accelRate, velPower) * Mathf.Sign(speedDif.y));
-        //rb.AddForce(movement * Time.fixedDeltaTime);
-        #endregion
-
-
+        if(Mathf.Abs(input.y)  > 0.01f || Mathf.Abs(input.x) > 0.01f) {
+            rb.velocity = input * speed * Time.fixedDeltaTime;
+        } else if(Mathf.Abs(input.y) < 0.01f || Mathf.Abs(input.x) < 0.01f) {
+            rb.velocity = new Vector2(0, velY);
+        }
     }
 
     private void Update() {
@@ -121,10 +115,24 @@ public class PlayerBehaviour : MonoBehaviour
 
         if (Mathf.Abs(lastDir.y) > 0.01f && Mathf.Abs(lastDir.x) < 0.01f) {
             zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, -90, 90);
-        } else if (lastDir.y > 0 && lastDir.x < 0 || lastDir.y > 0 && lastDir.x > 0 || lastDir.y < 0 && lastDir.x > 0 || lastDir.y < 0 && lastDir.x < 0) {
-            print("left diagonal");
-            zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, -45, 45);
-        } else {
+        } else if (lastDir.y > 0 && lastDir.x > 0) {
+            zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, 0, 45);
+            //zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, -45, 45);
+            yAngle = 0;
+        }
+        else if (lastDir.y > 0 && lastDir.x < 0) {
+            zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, 0, 45);
+            yAngle = 180;
+        }
+        else if (lastDir.y < 0 && lastDir.x > 0) {
+            zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, -45, 0);
+            yAngle = 0;
+        } else if(lastDir.y < 0 && lastDir.x < 0) {
+            zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, -45, 0);
+            yAngle = 180;
+        }
+        
+        else {
             zAngle = 0;
         }
 
@@ -136,9 +144,4 @@ public class PlayerBehaviour : MonoBehaviour
     public void CallTurn(InputAction.CallbackContext context) {
         //if (context.started) Turn();s
     }
-    void Lean() {
-        transform.eulerAngles = Vector3.forward * 90f;
-        print("Leaning");
-    }
-
 }

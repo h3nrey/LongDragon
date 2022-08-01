@@ -18,18 +18,12 @@ public class FireController : MonoBehaviour {
     private float projectilleSpeed => PlayerBehaviour.instance.projecctilleSpeed;
     private float projectilleCooldown => PlayerBehaviour.instance.projectilleCooldown;
 
+    private List<Transform> segments => PlayerBehaviour.instance.segments;
+    private SpriteRenderer graphics => PlayerBehaviour.instance._graphics;
+
     private void Start() {
         canShoot = true;
     }
-
-    private void FixedUpdate() {
-        foreach (GameObject projectille in projectilles) {
-            //print($"projectille name: {projectille.name}");
-            //projectille.transform.Translate(Vector2.up * projectilleSpeed);
-            //projectille.GetComponent<Rigidbody2D>().AddForce(transform.right * projectilleSpeed * Time.fixedDeltaTime,ForceMode2D.Impulse);
-        }
-    }
-
     public void createFire() {
         if(canShoot) {
             GameObject fire = Instantiate(fireProjectille, cannonPoint.position, Quaternion.identity);
@@ -37,6 +31,9 @@ public class FireController : MonoBehaviour {
             projectilles.Add(fire);
 
             fire.GetComponent<Rigidbody2D>().AddForce(transform.right * projectilleSpeed * Time.fixedDeltaTime, ForceMode2D.Impulse);
+
+            StartCoroutine(ChangeSpriteColor(0.5f));
+            
             Invoke("enableShoot", projectilleCooldown);
 
         }
@@ -44,6 +41,19 @@ public class FireController : MonoBehaviour {
 
     private void enableShoot() {
         canShoot = true;
+        StartCoroutine(ChangeSpriteColor(1));
+    }
+
+    private IEnumerator ChangeSpriteColor(float colorValue) {
+        yield return new WaitForSeconds(0);
+        graphics.color = new Color(1,1,1,colorValue);
+
+        for (int i = 0; i < segments.Count; i++) {
+            if(i > 0) {
+                yield return new WaitForSeconds(0.1f * i);
+                segments[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, colorValue);
+            }
+        }
     }
 
     public void Shoot(InputAction.CallbackContext context) {
