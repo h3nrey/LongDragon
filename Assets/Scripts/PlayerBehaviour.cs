@@ -18,6 +18,8 @@ public class PlayerBehaviour : MonoBehaviour
     [SerializeField] private float rotationSpeed;
     [ReadOnly] Vector3 inputVector;
     [ReadOnly] Vector3 currentPosition;
+    float yAngle = 0;
+    float zAngle = 0;
 
     [Header("Physics")]
     [SerializeField] public Rigidbody2D rb;
@@ -42,7 +44,7 @@ public class PlayerBehaviour : MonoBehaviour
 
     [Header("Body")]
     public List<Transform> segments;
-    Vector2 lastDir = new Vector2(0,-1);
+    [SerializeField]Vector2 lastDir = new Vector2(0,0);
 
     [Header("Shoot")]
     [SerializeField] public GameObject fireProjectille;
@@ -61,20 +63,10 @@ public class PlayerBehaviour : MonoBehaviour
         velX = rb.velocity.x;
         velY = rb.velocity.y;
 
-        if(input == Vector2.zero) {
-            speed = baseSpeed;
-            rb.gravityScale = gravityScale;
-        }
+        if (Mathf.Abs(input.magnitude) > 0.01f && Mathf.Abs(velX) < maxSpeed && Mathf.Abs(velY) < maxSpeed)
+            rb.AddForce(input * speed * Time.fixedDeltaTime);
+            
 
-        if(input.magnitude != 0) {
-            rb.gravityScale = 0;
-            rb.velocity = input * speed * Time.fixedDeltaTime;
-
-            if(speed < maxSpeed) {
-                speed += speedIncrementer;
-            }
-
-        }
 
         #region using force
         //Vector2 targetSpeed = input * horizontalSpeed;
@@ -88,19 +80,8 @@ public class PlayerBehaviour : MonoBehaviour
     }
 
     private void Update() {
-        //Turn();
-        //CheckFacing();
-        Vector2 lookDir = new Vector2(input.x * 180, input.y * 90);
-
-
-        //float targetAngle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
-        //rb.rotation = targetAngle;
-
-        //float targetAngle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
-        //transform.rotation = Quaternion.Euler(new Vector3(0, lookDir.x, lookDir.y));
         Turn();
 
-        //print($"targetAngle: {targetAngle}, lookDir: {lookDir}");
     }
 
     #region Inputs
@@ -131,46 +112,30 @@ public class PlayerBehaviour : MonoBehaviour
     }
 
     void Turn() {
-        Vector3 lookDir = new Vector3(0,0);
-        if (input.magnitude != 0) lastDir = input ;
+        if (input.magnitude != 0) lastDir = input;
 
-        float angle = Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg;
-        lookDir = Vector3.forward * angle;
-        Vector3 targetAngle = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, Mathf.LerpAngle(transform.eulerAngles.z, lookDir.z, rotationSpeed));
-        transform.rotation = Quaternion.Euler(targetAngle);
-        //print(targetAngle);s
-        
-        //if (lastDir == new Vector2(0, 1)) {
-        //    lookDir = new Vector2(lastDir.x * 180, 90); //Up 
-        //}
-        //else if (lastDir == new Vector2(0, -1)) {
-        //    lookDir = new Vector2(lastDir.x * 180, -90); //Down 
-        //}
-        //if (lastDir == new Vector2(1, 0)) {
-        //lookDir = new Vector2(0, lastDir.y * 90); //Right 
-        //}
-        //else if (lastDir == new Vector2(-1, 0)) {
-        //    lookDir = new Vector2(180, lastDir.y * 90); //Left 
-        //}
-        //else if (lastDir.x > 0 && lastDir.y > 0) {
-        //    lookDir = new Vector2(0, 35); //up diagonal right 
-        //}
-        //else if (lastDir.x > 0 && lastDir.y < 0) {
-        //    lookDir = new Vector2(0, -35); //down diagonal right 
-        //}
-        //else if (lastDir.x < 0 && lastDir.y > 0) {
-        //    lookDir = new Vector2(180, 35); //up diagonal left 
-        //}
-        //else if (lastDir.x < 0 && lastDir.y < 0) {
-        //    lookDir = new Vector2(180, -35); //down diagonal left 
-        //}
+        if (lastDir.x == 1) {
+            yAngle = 0;
+        }
+        else if (lastDir.x == -1) yAngle = 180;
 
-        //Vector3 angle = new Vector3(0, Mathf.Lerp(transform.eulerAngles.y, lookDir.x, rotationSpeed),Mathf.Lerp(transform.eulerAngles.z, lookDir.y, rotationSpeed));
-        //Quaternion targetRotation = Quaternion.Euler(angle);
+        if (Mathf.Abs(lastDir.y) > 0.01f && Mathf.Abs(lastDir.x) < 0.01f) {
+            zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, -90, 90);
+        } else if (lastDir.y > 0 && lastDir.x < 0 || lastDir.y > 0 && lastDir.x > 0 || lastDir.y < 0 && lastDir.x > 0 || lastDir.y < 0 && lastDir.x < 0) {
+            print("left diagonal");
+            zAngle = Mathf.Clamp(Mathf.Atan2(lastDir.y, lastDir.x) * Mathf.Rad2Deg, -45, 45);
+        } else {
+            zAngle = 0;
+        }
 
-        //transform.rotation = targetRotation;
+        Vector3 targetRotation = new Vector3(transform.eulerAngles.x, yAngle, zAngle);
+        Vector3 smothedRotation = new Vector3(targetRotation.x, Mathf.LerpAngle(transform.eulerAngles.y, yAngle, rotationSpeed),Mathf.LerpAngle(transform.eulerAngles.z, zAngle,rotationSpeed));
+        transform.rotation = Quaternion.Euler(smothedRotation);
     }
 
+    public void CallTurn(InputAction.CallbackContext context) {
+        //if (context.started) Turn();s
+    }
     void Lean() {
         transform.eulerAngles = Vector3.forward * 90f;
         print("Leaning");
